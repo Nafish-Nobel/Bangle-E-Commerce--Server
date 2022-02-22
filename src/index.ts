@@ -35,7 +35,7 @@ app.use(express.json());
 /* Database here */
 
 
-const uri:string = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xh4av.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri: string = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xh4av.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -73,14 +73,14 @@ async function run() {
             res.json(result);
         })
 
-/* Category part */
+        /* Category part */
         app.put("/category/:category", async (req: Request, res: Response) => {
             const category: string = req.params.category;
             const filter: { categoryName: string } = { categoryName: category };
             const options: { upsert: boolean } = { upsert: true };
             const updateDoc: { $set: { categoryName: string } } = { $set: { categoryName: category } };
             const result = await categoris.updateOne(filter, updateDoc, options);
-            console.log(result,"hetting");
+            console.log(result, "hetting");
             res.json(result);
         })
 
@@ -100,7 +100,7 @@ async function run() {
 
 
 
-
+        /* write your code before this middle ware, this was youse to unable routes */
         app.use(() => {
             throw createHttpError(404, "route not found");
         })
