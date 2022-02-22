@@ -35,7 +35,7 @@ app.use(express.json());
 /* Database here */
 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xh4av.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri:string = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xh4av.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -48,6 +48,7 @@ async function run() {
             "Server and Database connection succesfully!");
         const BanglaEcommerce = client.db("Bangla-E-commerce");
         const users = BanglaEcommerce.collection("users");
+        const categoris = BanglaEcommerce.collection("category");
 
 
 
@@ -57,7 +58,7 @@ async function run() {
         app.post("/users", async (req: Request, res: Response) => {
             const user: { email: string | null, displayName: string | null, AccountType: string } = req.body;
             const result = await users.insertOne(user);
-            console.log('heating');
+            // console.log('heating');
             res.send(result);
         })
 
@@ -68,8 +69,29 @@ async function run() {
             const options: { upsert: boolean } = { upsert: true };
             const updateDoc: { $set: { email: string | null, displayName: string | null, AccountType: string } } = { $set: user };
             const result = await users.updateOne(filter, updateDoc, options);
-            console.log('heating');
+            // console.log('heating');
             res.json(result);
+        })
+
+/* Category part */
+        app.put("/category/:category", async (req: Request, res: Response) => {
+            const category: string = req.params.category;
+            const filter: { categoryName: string } = { categoryName: category };
+            const options: { upsert: boolean } = { upsert: true };
+            const updateDoc: { $set: { categoryName: string } } = { $set: { categoryName: category } };
+            const result = await categoris.updateOne(filter, updateDoc, options);
+            console.log(result,"hetting");
+            res.json(result);
+        })
+
+        app.get("/categories", async (req: Request, res: Response) => {
+            const cursor = categoris.find({});
+            const result: {
+                _id: string,
+                categoryName: string,
+            } = await cursor.toArray();
+            // console.log(result);
+            res.send(result);
         })
 
 
@@ -77,7 +99,12 @@ async function run() {
 
 
 
-        
+
+
+        app.use(() => {
+            throw createHttpError(404, "route not found");
+        })
+        app.use(errorHandel);
     } finally {
         //   await client.close();
     }

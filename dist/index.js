@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const http_errors_1 = __importDefault(require("http-errors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const { MongoClient } = require("mongodb");
 const express = require('express');
@@ -44,12 +45,13 @@ function run() {
             console.log("Server and Database connection succesfully!");
             const BanglaEcommerce = client.db("Bangla-E-commerce");
             const users = BanglaEcommerce.collection("users");
+            const categoris = BanglaEcommerce.collection("category");
             // storing users 
             // new user 
             app.post("/users", (req, res) => __awaiter(this, void 0, void 0, function* () {
                 const user = req.body;
                 const result = yield users.insertOne(user);
-                console.log('heating');
+                // console.log('heating');
                 res.send(result);
             }));
             // existing user 
@@ -59,9 +61,29 @@ function run() {
                 const options = { upsert: true };
                 const updateDoc = { $set: user };
                 const result = yield users.updateOne(filter, updateDoc, options);
-                console.log('heating');
+                // console.log('heating');
                 res.json(result);
             }));
+            /* Category part */
+            app.put("/category/:category", (req, res) => __awaiter(this, void 0, void 0, function* () {
+                const category = req.params.category;
+                const filter = { categoryName: category };
+                const options = { upsert: true };
+                const updateDoc = { $set: { categoryName: category } };
+                const result = yield categoris.updateOne(filter, updateDoc, options);
+                console.log(result, "hetting");
+                res.json(result);
+            }));
+            app.get("/categories", (req, res) => __awaiter(this, void 0, void 0, function* () {
+                const cursor = categoris.find({});
+                const result = yield cursor.toArray();
+                // console.log(result);
+                res.send(result);
+            }));
+            app.use(() => {
+                throw (0, http_errors_1.default)(404, "route not found");
+            });
+            app.use(errorHandel);
         }
         finally {
             //   await client.close();
